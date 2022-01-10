@@ -1,0 +1,25 @@
+@import 'node_modules/nhsuk-frontend/packages/nhsuk';
+
+.nhsuk-label--bold {
+  font-weight: bold;
+}
+
+.nhsuk-fieldset__legend {
+  font-size: 2rem;
+  font-weight: bold;
+  line-height: 1.25;
+  margin-bottom: 16px;
+}
+
+.nhsuk-details__summary-text {
+  color: #005eb8;
+
+  &:before {
+    background-color: #005eb8 !important;
+    color: #005eb8 !important;
+  }
+}
+
+.float-right {
+  float: right;
+}

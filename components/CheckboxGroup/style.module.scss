@@ -1,0 +1,11 @@
+@import "vars";
+
+.reveal {
+  border-left: 4px solid $dark-grey;
+  margin-left: -22px;
+  padding-left: 30px;
+}
+
+.revealHint {
+  margin-bottom: 0;
+}

@@ -1,0 +1,19 @@
+.supplier {
+  details {
+    summary {
+      color: unset
+    }
+  }
+}
+
+.list-container {
+  -moz-columns: 3;
+  -webkit-columns: 3;
+  columns: 3;
+}
+
+.contact {
+  p {
+    margin-bottom: 8px;
+  }
+}

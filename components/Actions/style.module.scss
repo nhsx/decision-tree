@@ -1,0 +1,12 @@
+@import "vars";
+
+.actions {
+  margin-top: $nhsuk-gutter * 4;
+  margin-bottom: $nhsuk-gutter * 4;
+  vertical-align: middle;
+
+  a {
+    display: inline;
+    margin-right: 1em;
+  }
+}

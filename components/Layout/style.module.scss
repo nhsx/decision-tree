@@ -1,0 +1,14 @@
+@import 'vars';
+
+.main {
+  padding-top: $nhsuk-gutter * 4;
+  padding-bottom: $nhsuk-gutter * 4;
+}
+
+.header {
+  background-color: $care-green;
+}
+
+.logo {
+  width: 150px;
+}
