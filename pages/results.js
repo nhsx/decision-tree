@@ -3,11 +3,14 @@ import { getResults, getSheets } from '../helpers/api';
 import { useModelContext } from '../context/model';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
-import { Snippet, Row, Col } from '../components';
+import { Snippet, Row, Col, Details } from '../components';
 import size from 'lodash/size';
+import pickBy from 'lodash/pickBy';
 import chunk from 'lodash/chunk';
 import flatten from 'lodash/flatten';
 import every from 'lodash/every';
+import partition from 'lodash/partition';
+import intersection from '../node_modules/lodash/intersection';
 
 function filterSuppliers(model, mappings, suppliers) {
   const nopes = [
@@ -15,7 +18,7 @@ function filterSuppliers(model, mappings, suppliers) {
   ];
   const modelValues = flatten(Object.values(model)).filter(val => !nopes.includes(val));
 
-  return suppliers.filter(supplier => {
+  return partition(suppliers, supplier => {
     const map = mappings.find(mapping => mapping.name === supplier.id);
     const yeps = modelValues.filter(val => Object.keys(map).includes(val));
 
@@ -29,8 +32,19 @@ const CONTENT = {
   title: 'All assured suppliers of digital social care records',
   'title-filtered': '{{showing}} of {{total}} suppliers match your criteria',
   intro: 'All suppliers offer [core features for social care and comply with national standards](https://www.digitalsocialcare.co.uk/social-care-technology/digital-social-care-records-dynamic-purchasing-system/core-capabilities-and-standards-supplier-assurance-process/).',
-  hardware: '{{#hardware}}Supplies{{/hardware}}{{^hardware}}Does not supply{{/hardware}} devices such as computers, tablets and phones'
+  hardware: '{{#hardware}}Supplies{{/hardware}}{{^hardware}}Does not supply{{/hardware}} devices such as computers, tablets and phones',
+  'other-suppliers': {
+    title: `{{num}} supplier{{#plural}}s{{/plural}} didn't match your criteria`,
+    subtitle: 'Criteria not met'
+  }
 }
+
+const cross = (
+  <svg class="nhsuk-icon nhsuk-icon__cross" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M17 18.5c-.4 0-.8-.1-1.1-.4l-10-10c-.6-.6-.6-1.6 0-2.1.6-.6 1.5-.6 2.1 0l10 10c.6.6.6 1.5 0 2.1-.3.3-.6.4-1 .4z"></path>
+    <path d="M7 18.5c-.4 0-.8-.1-1.1-.4-.6-.6-.6-1.5 0-2.1l10-10c.6-.6 1.5-.6 2.1 0 .6.6.6 1.5 0 2.1l-10 10c-.3.3-.6.4-1 .4z"></path>
+  </svg>
+)
 
 function Supplier({ name, email, phone, web, summary, video, capabilities, hardware, integrations }) {
   const words = summary.split(' ');
@@ -53,45 +67,40 @@ function Supplier({ name, email, phone, web, summary, video, capabilities, hardw
           <p><a href={web} target="_blank">{`${web} (opens in a new tab)`}</a></p>
         </Col>
       </Row>
-      <details className="nhsuk-details">
-        <summary className="nhsuk-details__summary">
-          <span className="nhsuk-details__summary-text">See more</span>
-        </summary>
-        <div className="nhsuk-details__text">
-          <Row>
-            <Col colspan={2}>
-              <ReactMarkdown>{`... ${maincontent}`}</ReactMarkdown>
-              <hr />
-              <iframe
-                src={video}
-                width={500}
-                height={281}
-                frameborder={0}
-              />
-              <hr />
-              <h3>Key product capabilities:</h3>
-              <ReactMarkdown>{capabilities}</ReactMarkdown>
-              <hr />
-            </Col>
-            <Col />
-          </Row>
-          <Row>
-            <Col>
-              <h3>Devices</h3>
-              <Snippet hardware={hardware}>hardware</Snippet>
+      <Details summary="See more">
+        <Row>
+          <Col colspan={2}>
+            <ReactMarkdown>{`... ${maincontent}`}</ReactMarkdown>
+            <hr />
+            <iframe
+              src={video}
+              width={500}
+              height={281}
+              frameborder={0}
+            />
+            <hr />
+            <h3>Key product capabilities:</h3>
+            <ReactMarkdown>{capabilities}</ReactMarkdown>
+            <hr />
+          </Col>
+          <Col />
+        </Row>
+        <Row>
+          <Col>
+            <h3>Devices</h3>
+            <Snippet hardware={hardware}>hardware</Snippet>
 
-              <hr />
+            <hr />
 
-              <h3>Compatible with:</h3>
+            <h3>Compatible with:</h3>
 
-              <div className={styles['list-container']}>
-                <ReactMarkdown>{integrations}</ReactMarkdown>
-              </div>
+            <div className={styles['list-container']}>
+              <ReactMarkdown>{integrations}</ReactMarkdown>
+            </div>
 
-            </Col>
-          </Row>
-        </div>
-      </details>
+          </Col>
+        </Row>
+      </Details>
     </div>
   )
 }
@@ -187,6 +196,60 @@ function CheckYourAnswers({ model, schema }) {
   )
 }
 
+function OtherSuppliers({ otherSuppliers, model, mappings, schema }) {
+  const num = otherSuppliers.length;
+
+  // console.log(mappings, model, schema)
+
+  return (
+    <>
+      <h4><Snippet inline num={num} plural={num > 1}>other-suppliers.title</Snippet></h4>
+      <Details summary="Show suppliers not matching my criteria">
+        {
+          otherSuppliers.map(supplier => {
+            const settings = mappings.find(m => m.name === supplier.id);
+            return (
+              <>
+                <h3>{supplier.name}</h3>
+                <h4><Snippet inline>other-suppliers.subtitle</Snippet></h4>
+                {
+                  schema.map(s => {
+                    const sectionOptions = flatten(s.options.map(o => {
+                      if (o.reveal) {
+                        return o.reveal.options.map(r => r.value)
+                      }
+                      return o.value;
+                    }));
+
+                    const nopes = Object.keys(pickBy(settings, (setting, key) => {
+                      return sectionOptions.includes(key) && setting === false;
+                    }));
+
+                    const modelValues = flatten(Object.values(model))
+
+                    const toDisplay = intersection(nopes, modelValues);
+
+                    console.log({ toDisplay })
+
+                    return (
+                      <>
+                        <h4>{s.title}</h4>
+                        <ul>
+                          <li>hi</li>
+                        </ul>
+                      </>
+                    )
+                  })
+                }
+              </>
+            )
+          })
+        }
+      </Details>
+    </>
+  )
+}
+
 export default function Results({ suppliers, schema, mappings }) {
   const { model } = useModelContext();
 
@@ -197,14 +260,14 @@ export default function Results({ suppliers, schema, mappings }) {
     return !!val;
   }).length;
 
-  const visibleSuppliers = filterSuppliers(model, mappings, suppliers);
-  const filtered = visibleSuppliers.length < suppliers.length;
+  const [matchingSuppliers, otherSuppliers] = filterSuppliers(model, mappings, suppliers);
+  const filtered = matchingSuppliers.length < suppliers.length;
 
   return (
     <>
       <Row>
         <Col colspan={2}>
-          <h1><Snippet inline showing={visibleSuppliers.length} total={suppliers.length}>{filtered ? 'title-filtered' : 'title'}</Snippet></h1>
+          <h1><Snippet inline showing={matchingSuppliers.length} total={suppliers.length}>{filtered ? 'title-filtered' : 'title'}</Snippet></h1>
           <Snippet>intro</Snippet>
         </Col>
         <Col />
@@ -213,7 +276,10 @@ export default function Results({ suppliers, schema, mappings }) {
         hasValues && <CheckYourAnswers model={model} schema={schema} />
       }
       {
-        visibleSuppliers.map((supplier, index) => <Supplier {...supplier} />)
+        matchingSuppliers.map((supplier, index) => <Supplier {...supplier} />)
+      }
+      {
+        filtered && <OtherSuppliers otherSuppliers={otherSuppliers} mappings={mappings} model={model} schema={schema} />
       }
     </>
   )

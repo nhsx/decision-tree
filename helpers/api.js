@@ -29,12 +29,13 @@ async function getSpreadseet() {
 async function getSchema(doc, step) {
   const sheet = doc.sheetsByTitle[step];
   const rows = await sheet.getRows();
-  const { label, hint, type } = rows[0];
+  const { label, hint, type, title } = rows[0];
 
   return {
     label,
     hint,
     type,
+    title,
     name: step,
     options: rows.filter(r => Boolean(r.option)).map(r => {
       const revealOptions = rows.filter(rv => rv['reveal-parent'] === r.option);
