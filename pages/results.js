@@ -39,34 +39,43 @@ const CONTENT = {
   }
 }
 
-const cross = (
-  <svg class="nhsuk-icon nhsuk-icon__cross" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M17 18.5c-.4 0-.8-.1-1.1-.4l-10-10c-.6-.6-.6-1.6 0-2.1.6-.6 1.5-.6 2.1 0l10 10c.6.6.6 1.5 0 2.1-.3.3-.6.4-1 .4z"></path>
-    <path d="M7 18.5c-.4 0-.8-.1-1.1-.4-.6-.6-.6-1.5 0-2.1l10-10c.6-.6 1.5-.6 2.1 0 .6.6.6 1.5 0 2.1l-10 10c-.3.3-.6.4-1 .4z"></path>
-  </svg>
-)
-
-function Supplier({ name, email, phone, web, summary, video, capabilities, hardware, integrations }) {
+function Supplier({ name, email, phone, web, summary, video, capabilities, hardware, integrations, children }) {
   const words = summary.split(' ');
 
   const snippet = words.slice(0, 50).join(' ');
   const maincontent = words.slice(50).join(' ');
 
+  const contact = (
+    <div className={styles.contact}>
+      <h3>Contact</h3>
+      <p><a href={`mailto:${email}`}>{email}</a></p>
+      <p>{phone}</p>
+      <p><a href={web} target="_blank">{`${web} (opens in a new tab)`}</a></p>
+    </div>
+  )
+
   return (
     <div className={styles.supplier}>
       <hr />
       <Row>
-        <Col colspan={2}>
+        <Col colspan={children ? 3 : 2}>
           <h2>{ name }</h2>
-          <ReactMarkdown>{ `${snippet} ...` }</ReactMarkdown>
+          {
+            children || <ReactMarkdown>{ `${snippet} ...` }</ReactMarkdown>
+          }
         </Col>
-        <Col className={styles.contact}>
-          <h3>Contact</h3>
-          <p><a href={`mailto:${email}`}>{email}</a></p>
-          <p>{phone}</p>
-          <p><a href={web} target="_blank">{`${web} (opens in a new tab)`}</a></p>
-        </Col>
+        {
+          !children && <Col>{ contact }</Col>
+        }
       </Row>
+      {
+        children && (
+          <Row>
+            <Col colspan={2}><ReactMarkdown>{ `${snippet} ...` }</ReactMarkdown></Col>
+            <Col>{ contact }</Col>
+          </Row>
+        )
+      }
       <Details summary="See more">
         <Row>
           <Col colspan={2}>
@@ -199,7 +208,15 @@ function CheckYourAnswers({ model, schema }) {
 function OtherSuppliers({ otherSuppliers, model, mappings, schema }) {
   const num = otherSuppliers.length;
 
-  // console.log(mappings, model, schema)
+  const allOptions = flatten(schema.map(s => {
+    return flatten(s.options.map(opt => {
+      return opt.reveal ? opt.reveal.options : opt
+    }))
+  }))
+
+  function getLabel(key) {
+    return allOptions.find(opt => opt.value === key).label;
+  }
 
   return (
     <>
@@ -209,9 +226,8 @@ function OtherSuppliers({ otherSuppliers, model, mappings, schema }) {
           otherSuppliers.map(supplier => {
             const settings = mappings.find(m => m.name === supplier.id);
             return (
-              <>
-                <h3>{supplier.name}</h3>
-                <h4><Snippet inline>other-suppliers.subtitle</Snippet></h4>
+              <Supplier {...supplier}>
+                <h3><Snippet inline>other-suppliers.subtitle</Snippet></h3>
                 {
                   schema.map(s => {
                     const sectionOptions = flatten(s.options.map(o => {
@@ -229,19 +245,24 @@ function OtherSuppliers({ otherSuppliers, model, mappings, schema }) {
 
                     const toDisplay = intersection(nopes, modelValues);
 
-                    console.log({ toDisplay })
+                    if (!toDisplay.length) {
+                      return null
+                    }
 
                     return (
                       <>
                         <h4>{s.title}</h4>
-                        <ul>
-                          <li>hi</li>
+                        <ul className={styles['other-suppliers-list']}>
+                          {
+                            toDisplay.map(key => (<li>{getLabel(key)}</li>))
+                          }
                         </ul>
                       </>
                     )
                   })
                 }
-              </>
+
+              </Supplier>
             )
           })
         }
