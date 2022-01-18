@@ -13,7 +13,7 @@ export default function Home({ children, ...props }) {
         <title>
           <Snippet>title</Snippet>
         </title>
-        <link rel="icon" href="/favicon.png" />
+        <link rel="icon" sizes="192x192" href="/favicon-192x192.png" />
       </Head>
       <a className="nhsuk-skip-link" href="#maincontent">
         Skip to main content

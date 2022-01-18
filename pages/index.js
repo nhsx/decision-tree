@@ -32,7 +32,7 @@ export default function Home({ steps, ...props }) {
         <Snippet>content</Snippet>
         <Actions>
           <Link href={`/${steps[0]}`}><a className="nhsuk-button"><Snippet inline>actions.button</Snippet></a></Link>
-          <Link href="/results"><a><Snippet inline>actions.link</Snippet></a></Link>
+          <Link href="/results?clear=true"><a><Snippet inline>actions.link</Snippet></a></Link>
         </Actions>
         <h4><Snippet inline>download.title</Snippet></h4>
         <Snippet>download.content</Snippet>

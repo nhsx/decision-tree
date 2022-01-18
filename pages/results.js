@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import classnames from 'classnames';
+import { useRouter } from 'next/router';
 import { getResults, getSheets } from '../helpers/api';
 import { useModelContext } from '../context/model';
 import Link from 'next/link';
@@ -10,7 +12,11 @@ import chunk from 'lodash/chunk';
 import flatten from 'lodash/flatten';
 import every from 'lodash/every';
 import partition from 'lodash/partition';
-import intersection from '../node_modules/lodash/intersection';
+import intersection from 'lodash/intersection';
+import axios from 'axios';
+import { stringify } from 'csv-stringify/sync';
+
+const EMAIL_RE = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/
 
 function filterSuppliers(model, mappings, suppliers) {
   const nopes = [
@@ -36,6 +42,18 @@ const CONTENT = {
   'other-suppliers': {
     title: `{{num}} supplier{{#plural}}s{{/plural}} didn't match your criteria`,
     subtitle: 'Criteria not met'
+  },
+  'next-steps': {
+    title: 'Next steps',
+    content: '[Free resources and guidelines for buying solutions in the public sector](https://www.digitalsocialcare.co.uk/social-care-technology/digital-social-care-records-dynamic-purchasing-system/purchasing-through-the-dps/)'
+  },
+  actions: {
+    'download-filtered': 'Download results as a CSV',
+    'download-all': 'Download all suppliers as a CSV'
+  },
+  email: {
+    summary: 'Email my results to me',
+    'add-another': 'Add another email addresss'
   }
 }
 
@@ -44,6 +62,8 @@ function Supplier({ name, email, phone, web, summary, video, capabilities, hardw
 
   const snippet = words.slice(0, 50).join(' ');
   const maincontent = words.slice(50).join(' ');
+
+  const { query } = useRouter();
 
   const contact = (
     <div className={styles.contact}>
@@ -271,8 +291,146 @@ function OtherSuppliers({ otherSuppliers, model, mappings, schema }) {
   )
 }
 
+function EmailForm({ csv }) {
+  const [emails, setEmails] = useState(['']);
+  const [errs, setErrors] = useState({});
+  const [sending, setSending] = useState(false);
+
+  async function sendEmail() {
+    setSending(true)
+    const res = await axios.post('http://localhost:3000/api/send-email', { emails, csv });
+    setSending(false);
+    if (res.data.ok) {
+      window.alert('Email(s) sent successfully');
+    } else {
+      window.alert('There was a problem sending your email(s)');
+    }
+  }
+
+  const onEmailChange = index => e => {
+    const value = e.target.value;
+    setEmails(emails.map((email, i) => {
+      if (index === i) {
+        return value;
+      }
+      return email;
+    }));
+  }
+
+  function addAnother(e) {
+    e.preventDefault();
+
+    setEmails([
+      ...emails,
+      ''
+    ]);
+  }
+
+  const remove = index => e => {
+    e.preventDefault();
+    setEmails(emails.filter((e, i) => i !== index));
+  }
+
+  async function validateAndSend() {
+    const errs = emails.reduce((obj, email, index) => {
+      if (!email) {
+        return {
+          ...obj,
+          [index]: 'Email is required'
+        }
+      }
+      if (!email.match(EMAIL_RE)) {
+        return {
+          ...obj,
+          [index]: 'Email is invalid'
+        }
+      }
+      return obj
+    }, {});
+
+    if (size(errs)) {
+      return;
+    }
+
+    await sendEmail();
+  }
+
+  return (
+    <Details summary={<Snippet inline>email.summary</Snippet>}>
+      {
+        emails.map((email, index) => {
+          const error = errs[index];
+
+          return (
+            <div className={classnames('nhsuk-form-group', { 'nhsuk-form-group--error': error })}>
+              <label
+                className="nhsuk-label"
+                for={`email-${index}`}
+              >
+                Email
+              </label>
+              {
+                error && <span className="nhsuk-error-message">{error}</span>
+              }
+              <Row>
+                <Col colspan={2}>
+                  <input
+                    className={'nhsuk-input'}
+                    key={index}
+                    id={`email-${index}`}
+                    type="email"
+                    value={email}
+                    onChange={onEmailChange(index)}
+                  />
+                </Col>
+                <Col>
+                  {
+                    index > 0 && <p><a href="#" onClick={remove(index)}>Remove</a></p>
+                  }
+                </Col>
+              </Row>
+            </div>
+          )
+        })
+      }
+      <p>
+        <a href="#" onClick={addAnother}><Snippet inline>email.add-another</Snippet></a>
+      </p>
+      <button onClick={validateAndSend} className="nhsuk-button nhsuk-button--secondary" disabled={sending}>Submit</button>
+    </Details>
+  )
+}
+
 export default function Results({ suppliers, schema, mappings }) {
-  const { model } = useModelContext();
+  const { model, clearModel } = useModelContext();
+  const [matchingSuppliers, setMatchingSuppliers] = useState([]);
+  const [otherSuppliers, setOtherSuppliers] = useState([]);
+  const [csv, setCsv] = useState('');
+  const router = useRouter();
+
+  useEffect(() => {
+    if (router.query.clear) {
+      clearModel();
+      router.push({ path: router.pathname })
+    }
+  }, [router.query]);
+
+  useEffect(() => {
+    const columns = Object.keys(suppliers[0]).filter(key => key !== 'hardware').map(key => {
+      return {
+        key,
+        header: titleCase(key)
+      }
+    });
+
+    setCsv(stringify(matchingSuppliers, { columns, header: true }));
+  }, [matchingSuppliers]);
+
+  useEffect(() => {
+    const [newMatchingSuppliers, newOtherSuppliers] = filterSuppliers(model, mappings, suppliers);
+    setMatchingSuppliers(newMatchingSuppliers);
+    setOtherSuppliers(newOtherSuppliers);
+  }, [model, mappings, suppliers])
 
   const hasValues = !!Object.values(model).filter(val => {
     if (Array.isArray(val)) {
@@ -281,8 +439,23 @@ export default function Results({ suppliers, schema, mappings }) {
     return !!val;
   }).length;
 
-  const [matchingSuppliers, otherSuppliers] = filterSuppliers(model, mappings, suppliers);
   const filtered = matchingSuppliers.length < suppliers.length;
+
+  function titleCase(str) {
+    return `${str.charAt(0).toUpperCase()}${str.substring(1)}`;
+  }
+
+  function download(e) {
+    e.preventDefault();
+
+    const link = document.createElement('a');
+    link.href = encodeURI(`data:text/csv;charset=utf-8,${csv}`);
+    link.download = 'matching-suppliers.csv';
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 
   return (
     <>
@@ -302,6 +475,14 @@ export default function Results({ suppliers, schema, mappings }) {
       {
         filtered && <OtherSuppliers otherSuppliers={otherSuppliers} mappings={mappings} model={model} schema={schema} />
       }
+      <hr />
+      <a className="nhsuk-button" href="#" onClick={download}><Snippet inline>{filtered ? 'actions.download-filtered' : 'actions.download-all'}</Snippet></a>
+      {
+        filtered && <EmailForm csv={csv} />
+      }
+      <hr />
+      <h2><Snippet inline>next-steps.title</Snippet></h2>
+      <Snippet>next-steps.content</Snippet>
     </>
   )
 }

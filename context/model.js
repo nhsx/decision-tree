@@ -40,6 +40,11 @@ export function ModelContextWrapper({ children, schema }) {
     localStorage.clear();
   }
 
+  function clearModel() {
+    clearStorage();
+    setModel(emptyModel(schema));
+  }
+
   function updateField(field, value) {
     setModel({
       ...model,
@@ -49,7 +54,8 @@ export function ModelContextWrapper({ children, schema }) {
 
   const value = {
     model,
-    updateField
+    updateField,
+    clearModel
   };
 
   return <ModelContext.Provider value={value}>{children}</ModelContext.Provider>
