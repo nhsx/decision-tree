@@ -302,6 +302,7 @@ function EmailForm({ csv }) {
     setSending(false);
     if (res.data.ok) {
       window.alert('Email(s) sent successfully');
+      setEmails(['']);
     } else {
       window.alert('There was a problem sending your email(s)');
     }
@@ -332,14 +333,16 @@ function EmailForm({ csv }) {
   }
 
   async function validateAndSend() {
-    const errs = emails.reduce((obj, email, index) => {
+    const errors = emails.reduce((obj, email, index) => {
       if (!email) {
+        console.log('MISSING')
         return {
           ...obj,
           [index]: 'Email is required'
         }
       }
       if (!email.match(EMAIL_RE)) {
+        console.log('EWROKWEOKRW')
         return {
           ...obj,
           [index]: 'Email is invalid'
@@ -348,7 +351,9 @@ function EmailForm({ csv }) {
       return obj
     }, {});
 
-    if (size(errs)) {
+    setErrors(errors);
+
+    if (size(errors)) {
       return;
     }
 
