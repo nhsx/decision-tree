@@ -2,8 +2,8 @@ name: test-ci
 
 on:
   push:
-    branches:
-      - '*'
+    branches_ignore:
+      - 'main'
 
 jobs:
   test:
