@@ -418,7 +418,7 @@ export default function Results({ suppliers, schema, mappings }) {
       clearModel();
       router.push({ path: router.pathname })
     }
-  }, [router.query]);
+  }, [clearModel, router]);
 
   useEffect(() => {
     const columns = Object.keys(suppliers[0]).filter(key => key !== 'hardware').map(key => {
@@ -429,7 +429,7 @@ export default function Results({ suppliers, schema, mappings }) {
     });
 
     setCsv(stringify(matchingSuppliers, { columns, header: true }));
-  }, [matchingSuppliers]);
+  }, [suppliers, matchingSuppliers]);
 
   useEffect(() => {
     const [newMatchingSuppliers, newOtherSuppliers] = filterSuppliers(model, mappings, suppliers);
