@@ -1,8 +1,15 @@
 name: deploy-staging
 
 on:
-  push:
-    tags: '*'
+  workflow_run:
+    tags:
+      - '*'
+    workflows:
+      - build-and-test
+    types:
+      - completed
+    conclusion:
+      - success
 
 jobs:
   deploy:
