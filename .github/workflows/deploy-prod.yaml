@@ -1,12 +1,14 @@
 name: deploy-prod
 
-on: release
+on:
+  release:
+    types:
+      - released
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: prod
-    if: "!github.event.release.prerelease"
     env:
       SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
       CLIENT_EMAIL: ${{ secrets.CLIENT_EMAIL }}
