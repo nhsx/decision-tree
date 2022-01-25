@@ -2,16 +2,20 @@ name: build-and-test
 
 on:
   - push
-  - pull_request
 
 jobs:
 
   test:
     runs-on: ubuntu-latest
+    environment: dev
     strategy:
       matrix:
         node-version:
           - 16.x
+    env:
+      SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+      CLIENT_EMAIL: ${{ secrets.CLIENT_EMAIL }}
+      PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
