@@ -1,17 +1,15 @@
 name: deploy-dev
 
 on:
-  workflow_run:
+  push:
     branches:
       - main
-    workflows:
-      - build-and-test
-    types:
-      - completed
-    conclusion:
-      - success
 
 jobs:
+  test:
+    uses: ./.github/workflows/test.yaml
+  integration-test:
+    uses: ./.github/workflows/integration-test.yaml
   deploy:
     runs-on: ubuntu-latest
     environment: dev

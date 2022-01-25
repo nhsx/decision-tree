@@ -1,10 +1,9 @@
 name: integration-test
 
 on:
-  - push
+  workflow_call:
 
 jobs:
-
   integrationtest:
     runs-on: ubuntu-latest
     environment: ci
