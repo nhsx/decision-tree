@@ -1,0 +1,27 @@
+name: deploy-dev
+
+on:
+  workflow_run:
+    branches:
+      - main
+    workflows:
+      - build-and-test
+    types:
+      - completed
+    conclusion:
+      - success
+
+jobs:
+
+  deploy:
+    runs-on: ubuntu-latest
+    environment: dev
+    env:
+      SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+      CLIENT_EMAIL: ${{ secrets.CLIENT_EMAIL }}
+      PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: deploy
+        run: echo "DEPLOYING DEV"
