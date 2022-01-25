@@ -1,6 +1,8 @@
 const { GoogleSpreadsheet } = require('google-spreadsheet');
 const { pick, mapValues } = require('lodash');
 
+let cache = null;
+
 function conditionalParseBool(val) {
   if (val === 'TRUE') {
     return true;
@@ -90,7 +92,7 @@ export async function getResults() {
   };
 }
 
-export async function getSheets(req, res) {
+async function loadSheets() {
   const doc = await getSpreadseet();
 
   const blacklist = [
@@ -104,4 +106,14 @@ export async function getSheets(req, res) {
     .then(schema => {
       return { steps, schema }
     });
+}
+
+export async function getSheets() {
+  if (cache) {
+    return await cache;
+  }
+
+  cache = loadSheets();
+
+  return await cache;
 }

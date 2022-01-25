@@ -1,0 +1,29 @@
+name: integration-test
+
+on:
+  - push
+
+jobs:
+
+  integrationtest:
+    runs-on: ubuntu-latest
+    environment: ci
+    strategy:
+      matrix:
+        node-version:
+          - 16.x
+    env:
+      PORT: 3000
+      SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+      CLIENT_EMAIL: ${{ secrets.CLIENT_EMAIL }}
+      PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build --if-present
+      - run: npm start &
+      - run: npm run test:integration

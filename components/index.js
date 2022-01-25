@@ -6,5 +6,5 @@ export { default as Layout } from './Layout';
 export { default as RadioGroup } from './RadioGroup';
 export { default as Snippet } from './Snippet';
 
-export { Details, Summary } from './details';
+export { Details, Summary } from './Details';
 export { Row, Col } from './Grid';

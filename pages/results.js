@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { Fragment, useState, useEffect } from 'react';
 import classnames from 'classnames';
 import { useRouter } from 'next/router';
 import { getResults, getSheets } from '../helpers/api';
@@ -70,7 +70,7 @@ function Supplier({ name, email, phone, web, summary, video, capabilities, hardw
       <h3>Contact</h3>
       <p><a href={`mailto:${email}`}>{email}</a></p>
       <p>{phone}</p>
-      <p><a href={web} target="_blank">{`${web} (opens in a new tab)`}</a></p>
+      <p><a href={web} target="_blank" rel="noreferrer">{`${web} (opens in a new tab)`}</a></p>
     </div>
   )
 
@@ -105,7 +105,7 @@ function Supplier({ name, email, phone, web, summary, video, capabilities, hardw
               src={video}
               width={500}
               height={281}
-              frameborder={0}
+              frameBorder={0}
             />
             <hr />
             <h3>Key product capabilities:</h3>
@@ -157,20 +157,20 @@ function CheckYourAnswersSection({ model, schema, section, title, nested = false
             <>
               {
                 nested
-                  ? chunked.map(chunk => (
-                    <Row>
+                  ? chunked.map((chunk, row) => (
+                    <Row key={row}>
                       {
-                        chunk.map(val => {
+                        chunk.map((val, col) => {
                           const children = val.reveal.options.filter(opt => model[val.value].includes(opt.value));
                           return (
-                            <Col>
+                            <Col key={col}>
                               <h5>{val.label}</h5>
                               {
                                 !!children.length
                                   ? (
                                     <ul>
                                       {
-                                        children.map(child => <li>{child.label}</li>)
+                                        children.map(child => <li key={child.value}>{child.label}</li>)
                                       }
                                     </ul>
                                   )
@@ -192,7 +192,7 @@ function CheckYourAnswersSection({ model, schema, section, title, nested = false
                     <div className={styles['list-container']}>
                       <ul>
                         {
-                          values.map(val => <li>{val.label}</li>)
+                          values.map(val => <li key={val.value}>{val.label}</li>)
                         }
                       </ul>
                     </div>
@@ -246,7 +246,7 @@ function OtherSuppliers({ otherSuppliers, model, mappings, schema }) {
           otherSuppliers.map(supplier => {
             const settings = mappings.find(m => m.name === supplier.id);
             return (
-              <Supplier {...supplier}>
+              <Supplier key={supplier.id} {...supplier}>
                 <h3><Snippet inline>other-suppliers.subtitle</Snippet></h3>
                 {
                   schema.map(s => {
@@ -270,14 +270,14 @@ function OtherSuppliers({ otherSuppliers, model, mappings, schema }) {
                     }
 
                     return (
-                      <>
+                      <Fragment key={s.name}>
                         <h4>{s.title}</h4>
                         <ul className={styles['other-suppliers-list']}>
                           {
-                            toDisplay.map(key => (<li>{getLabel(key)}</li>))
+                            toDisplay.map(key => (<li key={key}>{getLabel(key)}</li>))
                           }
                         </ul>
-                      </>
+                      </Fragment>
                     )
                   })
                 }
@@ -367,10 +367,10 @@ function EmailForm({ csv }) {
           const error = errs[index];
 
           return (
-            <div className={classnames('nhsuk-form-group', { 'nhsuk-form-group--error': error })}>
+            <div key={index} className={classnames('nhsuk-form-group', { 'nhsuk-form-group--error': error })}>
               <label
                 className="nhsuk-label"
-                for={`email-${index}`}
+                htmlFor={`email-${index}`}
               >
                 Email
               </label>
@@ -475,7 +475,7 @@ export default function Results({ suppliers, schema, mappings }) {
         hasValues && <CheckYourAnswers model={model} schema={schema} />
       }
       {
-        matchingSuppliers.map((supplier, index) => <Supplier {...supplier} />)
+        matchingSuppliers.map((supplier, index) => <Supplier key={supplier.id} {...supplier} />)
       }
       {
         filtered && <OtherSuppliers otherSuppliers={otherSuppliers} mappings={mappings} model={model} schema={schema} />
