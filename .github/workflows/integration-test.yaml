@@ -7,7 +7,7 @@ jobs:
 
   integrationtest:
     runs-on: ubuntu-latest
-    environment: dev
+    environment: ci
     strategy:
       matrix:
         node-version:
