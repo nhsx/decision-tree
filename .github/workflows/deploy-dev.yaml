@@ -6,29 +6,8 @@ on:
       - main
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    environment: dev
-    env:
-      PORT: 3000
-      SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
-      CLIENT_EMAIL: ${{ secrets.CLIENT_EMAIL }}
-      PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: 16.x
-          cache: 'npm'
-      - run: npm ci
-      - run: npm test
-      - run: npm run build --if-present
-      - run: npm start &
-      - run: npm run test:integration
   deploy:
     runs-on: ubuntu-latest
-    needs:
-      - test
     environment: dev
     env:
       CF_API: https://api.london.cloud.service.gov.uk
@@ -37,27 +16,26 @@ jobs:
       SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
       CLIENT_EMAIL: ${{ secrets.CLIENT_EMAIL }}
       PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+    permissions:
+      contents: read
     steps:
-      - name: Checkout Code
+      - name: checkout
         uses: actions/checkout@v2
-
-      - name: Install the CF CLI
-        run: |
-          wget -O cf.tar.gz "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=7.4.0&source=github-rel"
-          tar xzf cf.tar.gz
-          sudo mv cf /usr/local/bin/cf
-
-      - name: Authenticate
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build --if-present
+      - name: shipit
         env:
           CF_USERNAME: ${{ secrets.CF_USERNAME }}
           CF_PASSWORD: ${{ secrets.CF_PASSWORD }}
         run: |
+          curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=7.4.0&source=github-rel" | tar -zx
           echo "Logging into $CF_ORG/$CF_SPACE..."
-          cf api "${CF_API}"
-          cf auth
-          cf target -o "${CF_ORG}" -s "${CF_SPACE}"
-
-      - name: Deploy to PaaS
-        run: |
-          cf push -f manifest.yaml --strategy rolling
-          cf logout
+          ./cf api "${CF_API}"
+          ./cf auth
+          ./cf target -o "${CF_ORG}" -s "${CF_SPACE}"
+          ./cf push -f manifest.yaml --strategy rolling
+          ./cf logout
