@@ -31,11 +31,33 @@ jobs:
       - test
     environment: dev
     env:
+      CF_API: https://api.london.cloud.service.gov.uk
+      CF_ORG: nhs-digital-social-care-records
+      CF_SPACE: sandbox
       SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
       CLIENT_EMAIL: ${{ secrets.CLIENT_EMAIL }}
       PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
     steps:
-      - name: checkout
+      - name: Checkout Code
         uses: actions/checkout@v2
-      - name: deploy
-        run: echo "DEPLOYING DEV"
+
+      - name: Install the CF CLI
+        run: |
+          wget -O cf.tar.gz "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=7.4.0&source=github-rel"
+          tar xzf cf.tar.gz
+          sudo mv cf /usr/local/bin/cf
+
+      - name: Authenticate
+        env:
+          CF_USERNAME: ${{ secrets.CF_USERNAME }}
+          CF_PASSWORD: ${{ secrets.CF_PASSWORD }}
+        run: |
+          echo "Logging into $CF_ORG/$CF_SPACE..."
+          cf api "${CF_API}"
+          cf auth
+          cf target -o "${CF_ORG}" -s "${CF_SPACE}"
+
+      - name: Deploy to PaaS
+        run: |
+          cf push -f manifest.yaml --strategy rolling
+          cf logout
