@@ -32,7 +32,7 @@ jobs:
     env:
       CF_API: https://api.london.cloud.service.gov.uk
       CF_ORG: nhs-digital-social-care-records
-      CF_SPACE: sandbox
+      CF_SPACE: ${{ secrets.CF_SPACE }}
       SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
       CLIENT_EMAIL: ${{ secrets.CLIENT_EMAIL }}
       PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
