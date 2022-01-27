@@ -50,4 +50,4 @@ jobs:
           node-version: 16.x
           cache: 'npm'
       - run: npm ci
-      - run: npm run test:functional -- --baseUrl https://decision-tree-staging.london.cloudapps.digital
+      - run: npm run test:integration -- --baseUrl https://decision-tree-staging.london.cloudapps.digital
