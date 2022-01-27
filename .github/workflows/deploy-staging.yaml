@@ -40,3 +40,16 @@ jobs:
           ./cf target -o "${CF_ORG}" -s "${CF_SPACE}"
           ./cf push -f manifest.yaml decision-tree-staging
           ./cf logout
+
+  integration-test:
+    runs-on: ubuntu-latest
+    environment: staging
+    needs: deploy
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run test:functional -- --baseUrl https://decision-tree-staging.london.cloudapps.digital

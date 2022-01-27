@@ -22,13 +22,11 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npm test
-      - run: npm run build --if-present
-      - run: npm start &
-      - run: npm run test:integration
 
   deploy:
     runs-on: ubuntu-latest
     environment: dev
+    needs: test
     env:
       CF_API: https://api.london.cloud.service.gov.uk
       CF_ORG: nhs-digital-social-care-records
@@ -59,3 +57,16 @@ jobs:
           ./cf target -o "${CF_ORG}" -s "${CF_SPACE}"
           ./cf push -f manifest.yaml decision-tree-dev
           ./cf logout
+
+  integration-test:
+    runs-on: ubuntu-latest
+    environment: dev
+    needs: deploy
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run test:functional -- --baseUrl https://decision-tree-dev.london.cloudapps.digital
