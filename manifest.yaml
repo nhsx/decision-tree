@@ -1,7 +1,6 @@
 ---
 applications:
-- name: decision-tree
-  command: npm start
-  memory: 512MB
+- command: npm start
+  memory: 256MB
   buildpacks:
   - nodejs_buildpack

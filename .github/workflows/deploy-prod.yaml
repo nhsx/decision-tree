@@ -6,15 +6,37 @@ on:
       - released
 
 jobs:
+
   deploy:
     runs-on: ubuntu-latest
     environment: prod
     env:
+      CF_API: https://api.london.cloud.service.gov.uk
+      CF_ORG: nhs-digital-social-care-records
+      CF_SPACE: ${{ secrets.CF_SPACE }}
       SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
       CLIENT_EMAIL: ${{ secrets.CLIENT_EMAIL }}
       PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+    permissions:
+      contents: read
     steps:
       - name: checkout
         uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build --if-present
       - name: deploy
-        run: echo "DEPLOYING PROD"
+        env:
+          CF_USERNAME: ${{ secrets.CF_USERNAME }}
+          CF_PASSWORD: ${{ secrets.CF_PASSWORD }}
+        run: |
+          curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=7.4.0&source=github-rel" | tar -zx
+          echo "Logging into $CF_ORG/$CF_SPACE..."
+          ./cf api "${CF_API}"
+          ./cf auth
+          ./cf target -o "${CF_ORG}" -s "${CF_SPACE}"
+          ./cf push -f manifest.yaml decision-tree
+          ./cf logout
