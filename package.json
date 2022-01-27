@@ -22,7 +22,7 @@
     "mustache": "^4.2.0",
     "next": "latest",
     "nhsuk-frontend": "^6.0.1",
-    "nodemailer": "^6.7.2",
+    "notifications-node-client": "^5.1.0",
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "react-markdown": "^7.1.1",

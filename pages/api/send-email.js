@@ -1,42 +1,22 @@
-const nodemailer = require('nodemailer');
+const { NotifyClient } = require('notifications-node-client');
 
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: process.env.EMAIL_PORT,
-  auth: {
-    user: process.env.EMAIL_USERNAME,
-    pass: process.env.EMAIL_PASSWORD
-  }
-});
-
-const html = `
-  <h1>Your results for assured suppliers of digital social care records</h1>
-
-  <p>Attached is a CSV of assured suppliers of digital social care records matched to your search criteria</p>
-
-  <p>If your requirements change you can <a href="${process.env.SERVICE_START}">start a new search for digital social care record suppliers.</a> You can also <a href="https://www.digitalsocialcare.co.uk/">visit the Digital Social Care website</a> for more information on technology and data protection in social care.</p>
-`;
+const subject = 'Your results for assured suppliers of digital social care records';
 
 function sendMail({ email, csv }) {
-  return new Promise((resolve, reject) => {
-    transporter.sendMail({
-      from: '',
-      to: email,
-      subject: 'Your results for assured suppliers of digital social care records',
-      html,
-      attachments: [
-        {
-          filename: "matching-suppliers.csv",
-          content: csv
-        }
-      ]
-    }, (err, info) => {
-      if (err) {
-        return reject(err);
+
+  const client = new NotifyClient(process.env.NOTIFY_KEY);
+  const recipients = email.split(',');
+  const sendMessages = () => recipients.map(recipient => {
+    return client.sendEmail('f7cf81f1-fe11-4bef-8f44-eccfbd750ddd', recipient, {
+      personalisation: {
+        subject,
+        url: process.env.SERVICE_START,
+        link: client.prepareUpload(Buffer.from(csv))
       }
-      resolve(info);
     });
   });
+  return Promise.all(sendMessages());
+
 }
 
 export default function handler(req, res) {
@@ -49,6 +29,7 @@ export default function handler(req, res) {
       res.json({ ok: true })
     })
     .catch(err => {
-      res.json({ ok: false })
+      console.error(err.response.data.errors);
+      res.json({ ok: false, message: err.message })
     })
 }
