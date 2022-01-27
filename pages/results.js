@@ -298,7 +298,7 @@ function EmailForm({ csv }) {
 
   async function sendEmail() {
     setSending(true)
-    const res = await axios.post('http://localhost:3000/api/send-email', { emails, csv });
+    const res = await axios.post('/api/send-email', { emails, csv });
     setSending(false);
     if (res.data.ok) {
       window.alert('Email(s) sent successfully');
