@@ -2,5 +2,7 @@
 applications:
 - command: npm start
   memory: 256MB
+  health-check-type: http
+  health-check-http-endpoint: /
   buildpacks:
   - nodejs_buildpack
