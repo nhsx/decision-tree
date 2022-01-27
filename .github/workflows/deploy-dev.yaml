@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     environment: dev
     env:
-      PORT: 3000
       SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
       CLIENT_EMAIL: ${{ secrets.CLIENT_EMAIL }}
       PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
@@ -34,8 +33,6 @@ jobs:
       SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
       CLIENT_EMAIL: ${{ secrets.CLIENT_EMAIL }}
       PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-    permissions:
-      contents: read
     steps:
       - name: checkout
         uses: actions/checkout@v2
