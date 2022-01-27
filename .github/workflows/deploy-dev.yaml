@@ -34,6 +34,7 @@ jobs:
       CLIENT_EMAIL: ${{ secrets.CLIENT_EMAIL }}
       PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
       NOTIFY_KEY: ${{ secrets.NOTIFY_KEY }}
+      NOTIFY_TEMPLATE: ${{ secrets.NOTIFY_TEMPLATE }}
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -54,8 +55,9 @@ jobs:
           ./cf auth
           ./cf target -o "${CF_ORG}" -s "${CF_SPACE}"
           ./cf push -f manifest.yaml decision-tree-dev
-          ./cf set-env SERVICE_START https://decision-tree-dev.london.cloudapps.digital
-          ./cf set-env NOTIFY_KEY ${NOTIFY_KEY}
+          ./cf set-env decision-tree-dev SERVICE_START https://decision-tree-dev.london.cloudapps.digital
+          ./cf set-env decision-tree-dev NOTIFY_KEY ${NOTIFY_KEY}
+          ./cf set-env decision-tree-dev NOTIFY_TEMPLATE ${NOTIFY_TEMPLATE}
           ./cf logout
 
   integration-test:

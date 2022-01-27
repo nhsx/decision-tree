@@ -7,7 +7,7 @@ function sendMail({ email, csv }) {
   const client = new NotifyClient(process.env.NOTIFY_KEY);
   const recipients = email.split(',');
   const sendMessages = () => recipients.map(recipient => {
-    return client.sendEmail('f7cf81f1-fe11-4bef-8f44-eccfbd750ddd', recipient, {
+    return client.sendEmail(process.env.NOTIFY_TEMPLATE, recipient, {
       personalisation: {
         subject,
         url: process.env.SERVICE_START,
