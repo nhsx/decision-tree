@@ -11,7 +11,8 @@ function sendMail({ email, csv }) {
       personalisation: {
         subject,
         url: process.env.SERVICE_START,
-        link: client.prepareUpload(Buffer.from(csv))
+        // second argument to `prepareUpload` marks file type as CSV
+        link: client.prepareUpload(Buffer.from(csv), true)
       }
     });
   });
