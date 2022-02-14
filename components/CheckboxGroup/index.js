@@ -1,4 +1,4 @@
-import ReactMarkdown from 'react-markdown';
+import Markdown from '../Markdown';
 import classnames from 'classnames';
 import Field from '../Field';
 import Snippet from '../Snippet';
@@ -21,7 +21,7 @@ export default function CheckboxGroup({ name, label, hint, options, value, onFie
           <h1 className="nhsuk-fieldset__heading">{ label }</h1>
         </legend>
         {
-          hint && <div className="nhsuk-hint" id={`${name}-hint`}><ReactMarkdown>{ hint }</ReactMarkdown></div>
+          hint && <div className="nhsuk-hint" id={`${name}-hint`}><Markdown>{ hint }</Markdown></div>
         }
         <div className="nhsuk-checkboxes">
           {
