@@ -22,7 +22,12 @@ function filterSuppliers(model, mappings, suppliers) {
   const nopes = [
     'hardware'
   ];
-  const modelValues = flatten(Object.values(model)).filter(val => !nopes.includes(val));
+
+  const filteredModel = Object.keys(model)
+    .filter(key => !nopes.includes(key))
+    .map(key => model[key]);
+
+  const modelValues = flatten(filteredModel);
 
   return partition(suppliers, supplier => {
     const map = mappings.find(mapping => mapping.name === supplier.id);
