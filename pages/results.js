@@ -116,7 +116,7 @@ function Supplier({ name, email, phone, web, summary, video, capabilities, hardw
         </Row>
         <Row>
           <Col>
-            <h3>Devices</h3>
+            <h3>Devices:</h3>
             <Snippet hardware={hardware}>hardware</Snippet>
 
             <hr />
