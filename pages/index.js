@@ -14,8 +14,8 @@ export default function Home({ steps, csv, ...props }) {
 
         <p>Every supplier:</p>
         <ul>
-          <li>offers <a href="https://www.digitalsocialcare.co.uk/social-care-technology/digital-social-care-records-dynamic-purchasing-system/core-capabilities-and-standards-supplier-assurance-process/" target="_blank">minimum features (opens in a new tab)</a>, such as generating reports and seeing audit trails of changes to records</li>
-          <li>complies with <a href="https://www.digitalsocialcare.co.uk/social-care-technology/digital-social-care-records-dynamic-purchasing-system/core-capabilities-and-standards-supplier-assurance-process/" target="_blank">national standards (opens in a new tab)</a> and can help meet CQC regulations on good governance</li>
+          <li>offers <a href="https://www.digitalsocialcare.co.uk/social-care-technology/digital-social-care-records-dynamic-purchasing-system/core-capabilities-and-standards-supplier-assurance-process/" target="_blank" rel="noreferrer">minimum features (opens in a new tab)</a>, such as generating reports and seeing audit trails of changes to records</li>
+          <li>complies with <a href="https://www.digitalsocialcare.co.uk/social-care-technology/digital-social-care-records-dynamic-purchasing-system/core-capabilities-and-standards-supplier-assurance-process/" target="_blank" rel="noreferrer">national standards (opens in a new tab)</a> and can help meet CQC regulations on good governance</li>
           <li>has passed basic financial and security checks to give you added protection</li>
         </ul>
 
