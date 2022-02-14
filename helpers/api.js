@@ -16,6 +16,13 @@ function conditionalParseBool(val) {
   return val;
 }
 
+function normaliseUrl(url) {
+  if (url && !url.match(/^http(s)?:\/\//)) {
+    return `https://${url}`;
+  }
+  return url;
+}
+
 async function getSpreadseet() {
   const doc = new GoogleSpreadsheet(process.env.SPREADSHEET_ID);
   await doc.useServiceAccountAuth({
@@ -70,7 +77,10 @@ export async function getAllSuppliers(doc) {
   const sheet = doc.sheetsByTitle['suppliers'];
   const rows = await sheet.getRows();
 
-  return rows.map(row => mapValues(pick(row, 'id', 'name', 'email', 'phone', 'web', 'summary', 'video', 'capabilities', 'integrations', 'hardware'), conditionalParseBool))
+  return rows
+    .map(row => pick(row, 'id', 'name', 'email', 'phone', 'web', 'summary', 'video', 'capabilities', 'integrations', 'hardware'))
+    .map(row => mapValues(row, conditionalParseBool))
+    .map(row => ({ ...row, web: normaliseUrl(row.web) }))
 }
 
 export async function getMappings(doc) {

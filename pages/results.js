@@ -70,7 +70,7 @@ function Supplier({ name, email, phone, web, summary, video, capabilities, hardw
       <h3>Contact</h3>
       <p><a href={`mailto:${email}`}>{email}</a></p>
       <p>{phone}</p>
-      <p><a href={web} target="_blank" rel="noreferrer">{`${web} (opens in a new tab)`}</a></p>
+      <p><a href={web} target="_blank" rel="noreferrer">{`${web.replace(/^http(s)?:\/\//, '')} (opens in a new tab)`}</a></p>
     </div>
   )
 
