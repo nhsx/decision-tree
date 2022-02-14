@@ -46,10 +46,16 @@ export function ModelContextWrapper({ children, schema }) {
   }
 
   function updateField(field, value) {
-    setModel({
-      ...model,
-      [field]: value
-    })
+    const topLevelQuestion = schema.find(q => q.name === field);
+    const newState = { ...model, [field]: value };
+    if (topLevelQuestion) {
+      topLevelQuestion.options
+        .filter(opt => opt.reveal && !value.includes(opt.value))
+        .forEach(opt => {
+          newState[opt.value] = [];
+        })
+    }
+    setModel(newState);
   }
 
   const value = {
