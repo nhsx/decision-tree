@@ -1,4 +1,4 @@
-import ReactMarkdown from 'react-markdown';
+import Markdown from '../Markdown';
 
 export default function RadioGroup({ name, label, hint, options, value, onFieldChange }) {
   function onChange(e) {
@@ -13,7 +13,7 @@ export default function RadioGroup({ name, label, hint, options, value, onFieldC
           <h1 className="nhsuk-fieldset__heading">{label}</h1>
         </legend>
         {
-          hint && <div className="nhsuk-hint" id={`${name}-hint`}>{ hint }</div>
+          hint && <div className="nhsuk-hint" id={`${name}-hint`}><Markdown>{ hint }</Markdown></div>
         }
         <div className="nhsuk-radios">
           {

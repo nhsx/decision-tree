@@ -1,8 +1,8 @@
-import ReactMarkdown from 'react-markdown';
 import classnames from 'classnames';
 import get from 'lodash/get';
 import Mustache from 'mustache';
 import { useContentContext } from '../../context/content';
+import Markdown from '../Markdown';
 
 const trim = (value) =>
   value
@@ -32,11 +32,11 @@ export default function Content({ children, inline, small, large, ...props }) {
   }
 
   return (
-    <ReactMarkdown
+    <Markdown
       includeElementIndex={true}
       components={{ p: conditionalInline }}
     >
       {source}
-    </ReactMarkdown>
+    </Markdown>
   );
 }
