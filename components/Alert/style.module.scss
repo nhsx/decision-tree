@@ -1,0 +1,36 @@
+@import 'node_modules/nhsuk-frontend/packages/core/settings/colours';
+
+.alert {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  background: $color_nhsuk-green;
+  color: white;
+  font-weight: bold;
+  z-index: 10000;
+  cursor: pointer;
+
+  p {
+    margin: 1em 0;
+    position: relative;
+    &:after {
+      content: "✕";
+      position: absolute;
+      top: 0;
+      right: 0;
+      color: white;
+      height: 1em;
+      width: 1em;
+    }
+  }
+
+
+  .nhsuk-width-container {
+    position: relative;
+  }
+}
+
+.alert-error {
+  background: $nhsuk-error-color;
+}
