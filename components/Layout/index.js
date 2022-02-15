@@ -2,7 +2,7 @@ import { useRouter } from 'next/router';
 import classnames from 'classnames';
 import Head from 'next/head';
 import Link from 'next/link';
-import { BackLink, Snippet, Col, Row } from '../';
+import { Alert, BackLink, Snippet, Col, Row } from '../';
 import styles from './style.module.scss';
 
 export default function Home({ children, ...props }) {
@@ -40,7 +40,7 @@ export default function Home({ children, ...props }) {
           </Row>
         </div>
       </header>
-
+      <Alert />
       <div className="nhsuk-width-container">
         <br />
         <BackLink />

@@ -1,3 +1,4 @@
+export { default as Alert } from './Alert';
 export { default as Actions } from './Actions';
 export { default as BackLink } from './BackLink';
 export { default as CheckboxGroup } from './CheckboxGroup';

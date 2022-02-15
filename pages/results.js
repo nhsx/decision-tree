@@ -3,6 +3,7 @@ import classnames from 'classnames';
 import { useRouter } from 'next/router';
 import { getResults, getSheets } from '../helpers/api';
 import { useModelContext } from '../context/model';
+import { useAlertContext } from '../context/alert';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import { Snippet, Row, Col, Details } from '../components';
@@ -300,16 +301,17 @@ function EmailForm({ csv }) {
   const [emails, setEmails] = useState(['']);
   const [errs, setErrors] = useState({});
   const [sending, setSending] = useState(false);
+  const { alertSuccess, alertError } = useAlertContext();
 
   async function sendEmail() {
     setSending(true)
     const res = await axios.post('/api/send-email', { emails, csv });
     setSending(false);
     if (res.data.ok) {
-      window.alert('Email(s) sent successfully');
+      alertSuccess('Email(s) sent successfully');
       setEmails(['']);
     } else {
-      window.alert('There was a problem sending your email(s)');
+      alertError('There was a problem sending your email(s)');
     }
   }
 
@@ -340,14 +342,12 @@ function EmailForm({ csv }) {
   async function validateAndSend() {
     const errors = emails.reduce((obj, email, index) => {
       if (!email) {
-        console.log('MISSING')
         return {
           ...obj,
           [index]: 'Email is required'
         }
       }
       if (!email.match(EMAIL_RE)) {
-        console.log('EWROKWEOKRW')
         return {
           ...obj,
           [index]: 'Email is invalid'
@@ -470,11 +470,11 @@ export default function Results({ suppliers, schema, mappings }) {
   return (
     <>
       <Row>
-        <Col colspan={2}>
+        <Col colspan={2} total={3}>
           <h1><Snippet inline showing={matchingSuppliers.length} total={suppliers.length}>{filtered ? 'title-filtered' : 'title'}</Snippet></h1>
           <Snippet>intro</Snippet>
         </Col>
-        <Col />
+        <Col/>
       </Row>
       {
         hasValues && <CheckYourAnswers model={model} schema={schema} />
