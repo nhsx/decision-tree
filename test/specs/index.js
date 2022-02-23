@@ -27,6 +27,15 @@ describe('Homepage', () => {
     const text = await $('h1').getText();
 
     assert.ok(text.match(/^[0-9]+ of [0-9]+ suppliers match your criteria$/));
+  });
 
+  it('can skip form and see all suppliers', async () => {
+    await browser.url(`/`);
+
+    await $('a=Go straight to all suppliers').click();
+
+    const text = await $('h1').getText();
+
+    assert.equal(text, 'All assured suppliers of digital social care records');
   });
 });
