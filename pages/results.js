@@ -32,6 +32,9 @@ function filterSuppliers(model, mappings, suppliers) {
 
   return partition(suppliers, supplier => {
     const map = mappings.find(mapping => mapping.name === supplier.id);
+    if (!map) {
+      return false;
+    }
     const yeps = modelValues.filter(val => Object.keys(map).includes(val));
 
     return !yeps.length || every(yeps, yep => map[yep]);
