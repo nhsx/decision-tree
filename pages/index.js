@@ -1,10 +1,9 @@
 import Link from 'next/link';
-import { stringify } from 'csv-stringify/sync';
 import { Row, Col, Actions } from '../components';
 import styles from '../styles/Home.module.scss';
-import { getSheets, getResults } from '../helpers/api';
+import { getSheets } from '../helpers/api';
 
-export default function Home({ steps, csv, ...props }) {
+export default function Home({ steps, ...props }) {
 
   return (
     <Row>
@@ -25,7 +24,7 @@ export default function Home({ steps, csv, ...props }) {
           <Link href="/results?clear=true"><a>Go straight to all suppliers</a></Link>
         </Actions>
         <h4>Before you start</h4>
-        <p>If you’re not sure what you need from a digital solution, you can <a href={encodeURI(`data:text/csv;charset=utf-8,${csv}`)} download="all-suppliers.csv">download a list of all the features offered by different suppliers</a> to see what’s possible.</p>
+        <p>If you’re not sure what you need from a digital solution, you can <a href="/Required_and_optional_standards_and_capabilities_March_2021.xlsx">download a list of all the features offered by different suppliers</a> to see what’s possible.</p>
       </Col>
       <Col />
     </Row>
@@ -33,27 +32,12 @@ export default function Home({ steps, csv, ...props }) {
 }
 
 export async function getStaticProps() {
-  const { suppliers } = await getResults()
   const { steps, schema } = await getSheets()
-
-  const titleCase = (str) => {
-    return `${str.charAt(0).toUpperCase()}${str.substring(1)}`;
-  }
-
-  const columns = Object.keys(suppliers[0]).filter(key => key !== 'hardware').map(key => {
-    return {
-      key,
-      header: titleCase(key)
-    }
-  })
-
-  const csv = stringify(suppliers, { columns, header: true })
 
   return {
     props: {
       steps,
-      schema,
-      csv
+      schema
     }
   }
 }
