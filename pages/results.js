@@ -434,7 +434,10 @@ export default function Results({ suppliers, schema, mappings }) {
   }, [clearModel, router]);
 
   useEffect(() => {
-    setDownload(getDownload({ model, schema, mappings, suppliers: [...matchingSuppliers, ...otherSuppliers] }));
+    setDownload(getDownload({ model, schema, mappings, suppliers: [
+      ...matchingSuppliers.map(s => ({ ...s, matched: true })),
+      ...otherSuppliers.map(s => ({ ...s, matched: false }))
+    ] }));
   }, [matchingSuppliers, otherSuppliers, schema, model]);
 
   useEffect(() => {
