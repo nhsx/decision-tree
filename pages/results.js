@@ -1,12 +1,8 @@
 import { Fragment, useState, useEffect } from 'react';
 import classnames from 'classnames';
 import { useRouter } from 'next/router';
-import { getResults, getSheets } from '../helpers/api';
-import { useModelContext } from '../context/model';
-import { useAlertContext } from '../context/alert';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
-import { Snippet, Row, Col, Details } from '../components';
 import size from 'lodash/size';
 import pickBy from 'lodash/pickBy';
 import chunk from 'lodash/chunk';
@@ -15,8 +11,13 @@ import every from 'lodash/every';
 import partition from 'lodash/partition';
 import intersection from 'lodash/intersection';
 import axios from 'axios';
-import { stringify } from 'csv-stringify/sync';
 import shuffle from 'fast-shuffle';
+
+import { getResults, getSheets } from '../helpers/api';
+import { getDownload } from '../helpers/supplier-download';
+import { useModelContext } from '../context/model';
+import { useAlertContext } from '../context/alert';
+import { Snippet, Row, Col, Details } from '../components';
 
 const EMAIL_RE = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/
 
@@ -61,8 +62,8 @@ const CONTENT = {
     content: '[Free resources and guidelines for buying solutions in the public sector](https://www.digitalsocialcare.co.uk/social-care-technology/digital-social-care-records-dynamic-purchasing-system/purchasing-through-the-dps/)'
   },
   actions: {
-    'download-filtered': 'Download results as a CSV',
-    'download-all': 'Download all suppliers as a CSV'
+    'download-filtered': 'Download results',
+    'download-all': 'Download all suppliers'
   },
   email: {
     summary: 'Email my results to me',
@@ -304,7 +305,7 @@ function OtherSuppliers({ otherSuppliers, model, mappings, schema }) {
   )
 }
 
-function EmailForm({ csv }) {
+function EmailForm({ attachment }) {
   const [emails, setEmails] = useState(['']);
   const [errs, setErrors] = useState({});
   const [sending, setSending] = useState(false);
@@ -312,7 +313,7 @@ function EmailForm({ csv }) {
 
   async function sendEmail() {
     setSending(true)
-    const res = await axios.post('/api/send-email', { emails, csv });
+    const res = await axios.post('/api/send-email', { emails, attachment });
     setSending(false);
     if (res.data.ok) {
       alertSuccess('Email(s) sent successfully');
@@ -422,7 +423,7 @@ export default function Results({ suppliers, schema, mappings }) {
   const { model, clearModel } = useModelContext();
   const [matchingSuppliers, setMatchingSuppliers] = useState([]);
   const [otherSuppliers, setOtherSuppliers] = useState([]);
-  const [csv, setCsv] = useState('');
+  const [download, setDownload] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -433,15 +434,8 @@ export default function Results({ suppliers, schema, mappings }) {
   }, [clearModel, router]);
 
   useEffect(() => {
-    const columns = Object.keys(suppliers[0]).filter(key => key !== 'hardware').map(key => {
-      return {
-        key,
-        header: titleCase(key)
-      }
-    });
-
-    setCsv(stringify(matchingSuppliers, { columns, header: true }));
-  }, [suppliers, matchingSuppliers]);
+    setDownload(getDownload({ model, schema, mappings, suppliers: [...matchingSuppliers, ...otherSuppliers] }));
+  }, [matchingSuppliers, otherSuppliers, schema, model]);
 
   useEffect(() => {
     const [newMatchingSuppliers, newOtherSuppliers] = filterSuppliers(model, mappings, suppliers);
@@ -457,22 +451,6 @@ export default function Results({ suppliers, schema, mappings }) {
   }).length;
 
   const filtered = matchingSuppliers.length < suppliers.length;
-
-  function titleCase(str) {
-    return `${str.charAt(0).toUpperCase()}${str.substring(1)}`;
-  }
-
-  function download(e) {
-    e.preventDefault();
-
-    const link = document.createElement('a');
-    link.href = encodeURI(`data:text/csv;charset=utf-8,${csv}`);
-    link.download = 'matching-suppliers.csv';
-
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
 
   return (
     <>
@@ -493,9 +471,9 @@ export default function Results({ suppliers, schema, mappings }) {
         filtered && <OtherSuppliers otherSuppliers={otherSuppliers} mappings={mappings} model={model} schema={schema} />
       }
       <hr />
-      <a className="nhsuk-button" href="#" onClick={download}><Snippet inline>{filtered ? 'actions.download-filtered' : 'actions.download-all'}</Snippet></a>
+      <a className="nhsuk-button" href={encodeURI(`data:application/vnd.ms-excel;base64,${download}`)} download={`${filtered ? 'matching' : 'all'}-suppliers.xlsx`}><Snippet inline>{filtered ? 'actions.download-filtered' : 'actions.download-all'}</Snippet></a>
       {
-        filtered && <EmailForm csv={csv} />
+        filtered && <EmailForm attachment={download} />
       }
       <hr />
       <h2><Snippet inline>next-steps.title</Snippet></h2>
