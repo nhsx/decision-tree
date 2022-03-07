@@ -146,11 +146,16 @@ export function getDownload({ model, schema, mappings, suppliers }) {
 
     XLSX.utils.sheet_add_aoa(worksheet, [[ { v: 'Your search criteria', s: { font: STYLES.h2 } } ]], { origin: -1 });
     XLSX.utils.sheet_add_aoa(worksheet, selectedMapping, { origin: -1 });
-    XLSX.utils.sheet_add_aoa(worksheet, devices, { origin: -1 });
+    if (model.hardware !== 'no') {
+      XLSX.utils.sheet_add_aoa(worksheet, devices, { origin: -1 });
+    }
 
     XLSX.utils.sheet_add_aoa(worksheet, [], { origin: -1 });
     XLSX.utils.sheet_add_aoa(worksheet, [[ { v: 'Other services, features and compatible systems', s: { font: STYLES.h2 } } ]], { origin: -1 });
     XLSX.utils.sheet_add_aoa(worksheet, unselectedMapping, { origin: -1 });
+    if (model.hardware === 'no') {
+      XLSX.utils.sheet_add_aoa(worksheet, devices, { origin: -1 });
+    }
   } else {
     XLSX.utils.sheet_add_aoa(worksheet, [[ { v: 'Services, features and compatible systems', s: { font: STYLES.h2 } } ]], { origin: -1 });
     XLSX.utils.sheet_add_aoa(worksheet, getFilteredCapabilities(), { origin: -1 });
