@@ -2,8 +2,7 @@ const { NotifyClient } = require('notifications-node-client');
 
 const subject = 'Your results for assured suppliers of digital social care records';
 
-function sendMail({ email, csv }) {
-
+function sendMail({ email, attachment }) {
   const client = new NotifyClient(process.env.NOTIFY_KEY);
   const recipients = email.split(',');
   const sendMessages = () => recipients.map(recipient => {
@@ -11,8 +10,7 @@ function sendMail({ email, csv }) {
       personalisation: {
         subject,
         url: process.env.SERVICE_START,
-        // second argument to `prepareUpload` marks file type as CSV
-        link: client.prepareUpload(Buffer.from(csv), true)
+        link: client.prepareUpload(Buffer.from(attachment, 'base64'))
       }
     });
   });
@@ -21,10 +19,10 @@ function sendMail({ email, csv }) {
 }
 
 export default function handler(req, res) {
-  const { emails, csv } = req.body;
+  const { emails, attachment } = req.body;
 
   Promise.all(
-    emails.map(email => sendMail({ email, csv }))
+    emails.map(email => sendMail({ email, attachment }))
   )
     .then(() => {
       res.json({ ok: true })
