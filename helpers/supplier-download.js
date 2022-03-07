@@ -145,6 +145,13 @@ export function getDownload({ model, schema, mappings, suppliers }) {
     const unselectedMapping = getFilteredCapabilities(opt => !selected.includes(opt.value));
 
     XLSX.utils.sheet_add_aoa(worksheet, [[ { v: 'Your search criteria', s: { font: STYLES.h2 } } ]], { origin: -1 });
+    XLSX.utils.sheet_add_aoa(worksheet, [
+      addBorder([
+        { v: 'Search criteria matched', s: { font: STYLES.strong } },
+        '',
+        ...suppliers.map(s => s.matched ? YES() : NO())
+      ])
+    ], { origin: -1 });
     XLSX.utils.sheet_add_aoa(worksheet, selectedMapping, { origin: -1 });
     if (model.hardware !== 'no') {
       XLSX.utils.sheet_add_aoa(worksheet, devices, { origin: -1 });
