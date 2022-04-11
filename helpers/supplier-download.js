@@ -46,6 +46,7 @@ export function getDownload({ model, schema, mappings, suppliers }) {
       if (typeof cell === 'string') {
         return { v: cell, s: { border: STYLES.borderTop } };
       }
+      cell.s = cell.s || {};
       cell.s.border = STYLES.borderTop;
       return cell;
     });
