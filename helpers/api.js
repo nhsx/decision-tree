@@ -25,10 +25,16 @@ function normaliseUrl(url) {
 
 async function getSpreadseet() {
   const doc = new GoogleSpreadsheet(process.env.SPREADSHEET_ID);
-  await doc.useServiceAccountAuth({
-    client_email: process.env.CLIENT_EMAIL,
-    private_key: process.env.PRIVATE_KEY.replace(/\\n/g, "\n")
-  });
+  if (process.env.API_KEY) {
+    await doc.useApiKey(process.env.API_KEY);
+  } else if (process.env.CLIENT_EMAIL && process.env.PRIVATE_KEY) {
+    await doc.useServiceAccountAuth({
+      client_email: process.env.CLIENT_EMAIL,
+      private_key: process.env.PRIVATE_KEY.replace(/\\n/g, "\n")
+    });
+  } else {
+    throw new Error(`No GoogleSheets authentication credentials configured.`);
+  }
 
   await doc.loadInfo();
 
