@@ -41,7 +41,7 @@ export function getDownload({ model, schema, mappings, suppliers }) {
     }
   });
 
-  const addBorder = row => {
+  const addBorder = (row = []) => {
     return row.map(cell => {
       if (typeof cell === 'string') {
         return { v: cell, s: { border: STYLES.borderTop } };

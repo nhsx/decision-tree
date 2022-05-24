@@ -429,7 +429,7 @@ export default function Results({ suppliers, schema, mappings }) {
   useEffect(() => {
     if (router.query.clear) {
       clearModel();
-      router.replace({ path: router.pathname })
+      router.replace(router.pathname)
     }
   }, [clearModel, router]);
 
